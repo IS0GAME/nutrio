@@ -57,10 +57,26 @@ class NutritionAnalyzer(private val apiKey: String) {
                 .post(body)
                 .build()
 
-            val response = client.newCall(request).execute()
+            // Retry up to 3 times on 429
+            var response = client.newCall(request).execute()
+            var retries = 0
+            while (response.code == 429 && retries < 3) {
+                response.close()
+                kotlinx.coroutines.delay(2000L * (retries + 1))
+                response = client.newCall(request).execute()
+                retries++
+            }
 
             if (!response.isSuccessful) {
-                return@withContext Result.failure(Exception("API error: ${response.code} ${response.message}"))
+                val errorBody = response.body?.string() ?: ""
+                val errorMsg = when (response.code) {
+                    429 -> "API rate limit exceeded. Please wait a moment and try again."
+                    400 -> "Invalid API key format. Please check your key."
+                    403 -> "API key is invalid or expired. Please get a new key from aistudio.google.com"
+                    500 -> "Server error. Please try again later."
+                    else -> "API error: ${response.code} ${response.message}"
+                }
+                return@withContext Result.failure(Exception(errorMsg))
             }
 
             val responseBody = response.body?.string() ?: ""
