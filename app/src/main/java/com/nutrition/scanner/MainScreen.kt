@@ -511,15 +511,20 @@ fun CameraScreen(
         }
     }
 
-    // Auto-launch camera
+    // Auto-launch camera (only if permission granted)
     LaunchedEffect(Unit) {
-        val tempFile = File(context.cacheDir, "temp_photo.jpg")
-        tempUri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            tempFile
-        )
-        takePictureLauncher.launch(tempUri!!)
+        val granted = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (granted) {
+            val tempFile = File(context.cacheDir, "temp_photo.jpg")
+            tempUri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.fileprovider",
+                tempFile
+            )
+            takePictureLauncher.launch(tempUri!!)
+        }
     }
 
     Column(
