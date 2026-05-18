@@ -502,28 +502,25 @@ fun CameraScreen(
         }
     }
 
+    // Request permission and auto-launch camera
     LaunchedEffect(Unit) {
-        val granted = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
-        if (!granted) {
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        }
-    }
-
-    // Auto-launch camera (only if permission granted)
-    LaunchedEffect(Unit) {
-        val granted = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
-        if (granted) {
-            val tempFile = File(context.cacheDir, "temp_photo.jpg")
-            tempUri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.fileprovider",
-                tempFile
-            )
-            takePictureLauncher.launch(tempUri!!)
+        try {
+            val granted = ContextCompat.checkSelfPermission(
+                context, Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            } else {
+                val tempFile = File(context.cacheDir, "temp_photo.jpg")
+                tempUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.fileprovider",
+                    tempFile
+                )
+                tempUri?.let { takePictureLauncher.launch(it) }
+            }
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
