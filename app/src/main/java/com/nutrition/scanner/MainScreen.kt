@@ -46,7 +46,7 @@ import java.io.File
 fun NutritionApp() {
     val navController = rememberNavController()
     val scanHistory = remember { mutableStateListOf<ScanResult>() }
-    val apiKey = "AIzaSyD6mvTtAiDIlYMM5bhOaPuaZ_Ih47uDdEU"
+    val apiKey = BuildConfig.GEMINI_API_KEY
 
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {

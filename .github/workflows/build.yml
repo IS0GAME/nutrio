@@ -33,14 +33,11 @@ jobs:
       run: chmod +x gradlew
       
     - name: Build Debug APK
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       run: |
-        ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tail -200
-      continue-on-error: true
-    - name: Show build output
-      if: failure()
-      run: |
-        echo "=== BUILD FAILED ==="
-        find . -name "*.log" -exec tail -50 {} \;
+        echo "gemini.api.key=$GEMINI_API_KEY" >> local.properties
+        ./gradlew assembleDebug --no-daemon -PGEMINI_API_KEY="$GEMINI_API_KEY"
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
